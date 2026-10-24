@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blue Fan Action - Unipol Forum</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #0b0f19; color: #ffffff; text-align: center; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; background: #161d2f; padding: 25px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h1 { color: #2196F3; margin-bottom: 5px; font-size: 24px; }
+        p.subtitle { color: #aaa; font-size: 14px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        label { display: block; margin-bottom: 5px; font-size: 13px; color: #ccc; }
+        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 16px; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 8px; background: #2196F3; color: white; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+        button:hover { background: #1e88e5; }
+        #result { display: none; margin-top: 20px; padding: 20px; border-radius: 12px; background: #0f172a; border: 1px solid #334155; }
+        .color-box { width: 100%; height: 120px; border-radius: 8px; margin: 15px 0; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        #fullscreenView { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; flex-direction: column; justify-content: center; align-items: center; }
+        .close-btn { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.5); color: white; border: 2px solid white; border-radius: 50%; width: 40px; height: 40px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🇮🇹 BLUE FAN ACTION 💙</h1>
+    <p class="subtitle">Unipol Forum di Assago • 14 Novembre 2026</p>
+
+    <div id="formSection">
+        <div class="form-group">
+            <label>Nome e Cognome</label>
+            <input type="text" id="nameInput" placeholder="Es. Marco Rossi">
+        </div>
+        <div class="form-group">
+            <label>Seleziona il tuo Settore</label>
+            <select id="sectorSelect">
+                <option value="">-- Scegli Settore --</option>
+                <optgroup label="🟢 VERDE - Tribuna Centrale">
+                    <option value="B27">Settore B27</option>
+                    <option value="C27">Settore C27</option>
+                    <option value="A28">Settore A28</option>
+                    <option value="B28">Settore B28</option>
+                    <option value="C28">Settore C28</option>
+                </optgroup>
+                <optgroup label="⚪ BIANCO - Tribuna Centrale">
+                    <option value="A29">Settore A29</option>
+                    <option value="B29">Settore B29</option>
+                    <option value="C29">Settore C29</option>
+                </optgroup>
+                <optgroup label="🔴 ROSSO - Tribuna Centrale">
+                    <option value="A30">Settore A30</option>
+                    <option value="B30">Settore B30</option>
+                    <option value="C30">Settore C30</option>
+                    <option value="B31">Settore B31</option>
+                    <option value="C31">Settore C31</option>
+                </optgroup>
+                <optgroup label="🔵 PARTERRE">
+                    <option value="Parterre">Parterre (Prato)</option>
+                </optgroup>
+                <optgroup label="💡 TRIBUNE LATERALI">
+                    <option value="Laterale">Tribune Laterali (Torcia Flash)</option>
+                </optgroup>
+            </select>
+        </div>
+        <button onclick="submitForm()">Mostra il mio Colore</button>
+    </div>
+
+    <div id="result">
+        <h2 id="userNameDisplay"></h2>
+        <p id="sectorDisplay" style="color: #aaa; margin-top: 5px;"></p>
+        <div id="colorDisplay" class="color-box"></div>
+        <p id="instructionText" style="font-size: 14px; margin-bottom: 15px; color: #e2e8f0;"></p>
+        <button onclick="openFullscreen()">📲 Attiva Schermo Intero</button>
+    </div>
+</div>
+
+<div id="fullscreenView">
+    <button class="close-btn" onclick="closeFullscreen()">✕</button>
+    <div id="fullscreenContent" style="color: black; font-weight: bold; font-size: 24px; text-align: center; padding: 20px;"></div>
+</div>
+
+<script>
+    const colorMap = {
+        'B27': { color: '#009246', text: 'VERDE', textColor: '#ffffff', desc: 'Mostra lo schermo VERDE sulle note di "Sorry seems to be the hardest word"' },
+        'C27': { color: '#009246', text: 'VERDE', textColor: '#ffffff', desc: 'Mostra lo schermo VERDE sulle note di "Sorry seems to be the hardest word"' },
+        'A28': { color: '#009246', text: 'VERDE', textColor: '#ffffff', desc: 'Mostra lo schermo VERDE sulle note di "Sorry seems to be the hardest word"' },
+        'B28': { color: '#009246', text: 'VERDE', textColor: '#ffffff', desc: 'Mostra lo schermo VERDE sulle note di "Sorry seems to be the hardest word"' },
+        'C28': { color: '#009246', text: 'VERDE', textColor: '#ffffff', desc: 'Mostra lo schermo VERDE sulle note di "Sorry seems to be the hardest word"' },
+        'A29': { color: '#ffffff', text: 'BIANCO', textColor: '#000000', desc: 'Mostra lo schermo BIANCO sulle note di "Sorry seems to be the hardest word"' },
+        'B29': { color: '#ffffff', text: 'BIANCO', textColor: '#000000', desc: 'Mostra lo schermo BIANCO sulle note di "Sorry seems to be the hardest word"' },
+        'C29': { color: '#ffffff', text: 'BIANCO', textColor: '#000000', desc: 'Mostra lo schermo BIANCO sulle note di "Sorry seems to be the hardest word"' },
+        'A30': { color: '#ce2b37', text: 'ROSSO', textColor: '#ffffff', desc: 'Mostra lo schermo ROSSO sulle note di "Sorry seems to be the hardest word"' },
+        'B30': { color: '#ce2b37', text: 'ROSSO', textColor: '#ffffff', desc: 'Mostra lo schermo ROSSO sulle note di "Sorry seems to be the hardest word"' },
+        'C30': { color: '#ce2b37', text: 'ROSSO', textColor: '#ffffff', desc: 'Mostra lo schermo ROSSO sulle note di "Sorry seems to be the hardest word"' },
+        'B31': { color: '#ce2b37', text: 'ROSSO', textColor: '#ffffff', desc: 'Mostra lo schermo ROSSO sulle note di "Sorry seems to be the hardest word"' },
+        'C31': { color: '#ce2b37', text: 'ROSSO', textColor: '#ffffff', desc: 'Mostra lo schermo ROSSO sulle note di "Sorry seems to be the hardest word"' },
+        'Parterre': { color: '#0055a5', text: 'BLU MARE', textColor: '#ffffff', desc: 'Mostra lo schermo BLU MARE sulle note di "Sorry seems to be the hardest word"' },
+        'Laterale': { color: '#ffffdd', text: 'TORCIA FLASH', textColor: '#000000', desc: 'Accendi la TORCIA del telefono attorno alla bandiera!' }
+    };
+
+    let currentColor = {};
+
+    function submitForm() {
+        const name = document.getElementById('nameInput').value;
+        const sector = document.getElementById('sectorSelect').value;
+
+        if(!name || !sector) {
+            alert('Per favore inserisci il tuo nome e seleziona il tuo settore!');
+            return;
+        }
+
+        currentColor = colorMap[sector];
+        document.getElementById('userNameDisplay').innerText = "Ciao " + name + "!";
+        document.getElementById('sectorDisplay').innerText = "Settore: " + sector;
+        
+        const cBox = document.getElementById('colorDisplay');
+        cBox.style.backgroundColor = currentColor.color;
+        cBox.style.color = currentColor.textColor;
+        cBox.innerText = currentColor.text;
+
+        document.getElementById('instructionText').innerText = currentColor.desc;
+        document.getElementById('result').style.display = 'block';
+    }
+
+    function openFullscreen() {
+        const fs = document.getElementById('fullscreenView');
+        fs.style.backgroundColor = currentColor.color;
+        fs.style.display = 'flex';
+        document.getElementById('fullscreenContent').style.color = currentColor.textColor;
+        document.getElementById('fullscreenContent').innerText = currentColor.text + "\n\nBLUE FAN ACTION";
+    }
+
+    function closeFullscreen() {
+        document.getElementById('fullscreenView').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>
