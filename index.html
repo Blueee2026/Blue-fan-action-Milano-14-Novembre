@@ -23,9 +23,33 @@
         label { display: block; margin-bottom: 5px; font-size: 12px; color: #94a3b8; }
         input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #334155; background: #020617; color: #fff; font-size: 14px; }
         .submit-btn { width: 100%; padding: 14px; border: none; border-radius: 10px; background: #2563eb; color: white; font-weight: bold; font-size: 15px; cursor: pointer; margin-top: 10px; }
-        
+        .sec-btn { width: 100%; padding: 12px; border: 1px solid #334155; border-radius: 10px; background: transparent; color: #94a3b8; font-weight: bold; font-size: 13px; cursor: pointer; margin-top: 10px; }
+
+        /* SCHERMATA ISTRUZIONI / PREVIEW */
         #resultView { display: none; text-align: center; }
-        .color-card { width: 100%; height: 130px; border-radius: 12px; margin: 15px 0; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.6); }
+        .song-banner { background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; color: #fbbf24; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: bold; margin-bottom: 15px; line-height: 1.4; }
+        .color-preview-box { width: 100%; height: 80px; border-radius: 12px; margin: 15px 0; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; border: 1px solid rgba(255,255,255,0.2); }
+
+        /* SCHERMO INTERO SOLO COLORE */
+        #fullscreenColor { 
+            display: none; 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100vw; height: 100vh; 
+            z-index: 9999; 
+        }
+        .close-btn { 
+            position: absolute; 
+            top: 20px; right: 20px; 
+            background: rgba(0,0,0,0.4); 
+            color: #fff; 
+            border: none; 
+            width: 40px; height: 40px; 
+            border-radius: 50%; 
+            font-size: 20px; 
+            font-weight: bold; 
+            cursor: pointer; 
+        }
 
         #dashboardView { display: none; text-align: left; }
         .stats-box { background: #1e293b; padding: 12px; border-radius: 10px; margin-bottom: 20px; }
@@ -82,15 +106,26 @@
             <label>Fila e Posto (Opzionale)</label>
             <input type="text" id="seatInput" placeholder="Es. Fila 1 / Posto 12">
         </div>
-        <button class="submit-btn" id="subBtn" onclick="registerUser()">Registrati & Mostra Colore</button>
+        <button class="submit-btn" id="subBtn" onclick="registerUser()">Registrati & Genera Colore</button>
     </div>
 
-    <!-- RISULTATO -->
+    <!-- RIEPILOGO & ISTRUZIONI -->
     <div id="resultView">
+        <div class="song-banner">
+            🎵 Mostra questa schermata durante "A Chi Mi Dice"
+        </div>
         <h3 id="resName"></h3>
         <p id="resSector" style="color: #94a3b8; font-size: 13px; margin-top: 4px;"></p>
-        <div id="resColorBox" class="color-card"></div>
-        <button class="submit-btn" onclick="switchTab('partecipa')">Modifica Dati</button>
+        
+        <div id="resColorPreview" class="color-preview-box"></div>
+
+        <button class="submit-btn" style="background: #16a34a;" onclick="showFullscreen()">📲 Apri Colore a Schermo Intero</button>
+        <button class="sec-btn" onclick="switchTab('partecipa')">Modifica Dati</button>
+    </div>
+
+    <!-- SCHERMO INTERO PURO -->
+    <div id="fullscreenColor">
+        <button class="close-btn" onclick="closeFullscreen()">✕</button>
     </div>
 
     <!-- DASHBOARD (AREA RISERVATA) -->
@@ -124,7 +159,7 @@
 
 <script>
     // Configurazione API Key & PIN
-    const JSONBIN_KEY = "$2a$10$Bi2z7eWfCnRlDxNFv3PD/OvJKPs6pPvPThl2PFJgqOK3czGKN.x.u"; 
+    const JSONBIN_KEY = "INCOLLA_QUI_LA_TUA_MASTER_KEY"; 
     const ADMIN_PIN = "1234"; 
 
     const colorRules = {
@@ -136,10 +171,12 @@
     };
 
     let BIN_ID = localStorage.getItem('blue_bin_id') || '';
+    let selectedColor = '#1d4ed8';
 
     function switchTab(tab) {
         document.getElementById('partecipaView').style.display = tab === 'partecipa' ? 'block' : 'none';
         document.getElementById('resultView').style.display = 'none';
+        document.getElementById('fullscreenColor').style.display = 'none';
         document.getElementById('dashboardView').style.display = tab === 'dashboard' ? 'block' : 'none';
         document.getElementById('btnPartecipa').className = 'nav-btn ' + (tab === 'partecipa' ? 'active' : '');
         document.getElementById('btnDashboard').className = 'nav-btn ' + (tab === 'dashboard' ? 'active' : '');
@@ -152,22 +189,35 @@
 
         if(!name || !sector) { alert('Inserisci Nome e Settore!'); return; }
 
-        const conf = colorRules[sector] || { color: '#2563eb', text: 'BLU', cls: 'badge-BLU' };
+        const conf = colorRules[sector] || { color: '#1d4ed8', text: 'BLU', cls: 'badge-BLU' };
+        selectedColor = conf.color;
+
         document.getElementById('resName').innerText = name;
         document.getElementById('resSector').innerText = sector + " • " + seat;
-        const box = document.getElementById('resColorBox');
-        box.style.backgroundColor = conf.color;
-        box.style.color = conf.textColor || '#fff';
-        box.innerText = conf.text;
+        
+        const prevBox = document.getElementById('resColorPreview');
+        prevBox.style.backgroundColor = conf.color;
+        prevBox.style.color = conf.textColor || '#fff';
+        prevBox.innerText = "Colore Assegnato: " + conf.text;
 
         document.getElementById('partecipaView').style.display = 'none';
         document.getElementById('resultView').style.display = 'block';
 
-        if(JSONBIN_KEY !== "INCOLLA_QUI_LA_TUA_MASTER_KEY") {
+        if(JSONBIN_KEY !== "$2a$10$Bi2z7eWfCnRlDxNFv3PD/OvJKPs6pPvPThl2PFJgqOK3czGKN.x.u") {
             let currentData = await getData();
             currentData.push({ name: name, sector: sector, seat: seat, date: new Date().toISOString() });
             await saveData(currentData);
         }
+    }
+
+    function showFullscreen() {
+        const full = document.getElementById('fullscreenColor');
+        full.style.backgroundColor = selectedColor;
+        full.style.display = 'block';
+    }
+
+    function closeFullscreen() {
+        document.getElementById('fullscreenColor').style.display = 'none';
     }
 
     function openDashboard() {
